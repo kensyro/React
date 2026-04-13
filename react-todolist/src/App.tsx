@@ -22,14 +22,16 @@ const jsonToDoList: Array<JsonToDoList> = [
 ]
 
 function App() {
-    const [todoList, setTodoList] = useState(jsonToDoList);
-    const [newToDo, setNewtoDo ] = useState<string>("");
+    const [TodoList, setTodoList] = useState(jsonToDoList);
+    const [NewtoDo, setNewtoDo ] = useState<string>("");
+    const [IdChanged, setIdChanged ] = useState<number | null >(null);
+    const [NewChange, setNewChange ] = useState("");
     return (
       <>
       <form onSubmit={(event) => {
           event.preventDefault();
-          const newList = todoList.concat([
-            {title: newToDo, id: Math.random()},
+          const newList = TodoList.concat([
+            {title: NewtoDo, id: Math.random()},
           ]);
           setTodoList(newList);
           setNewtoDo(""); 
@@ -37,7 +39,7 @@ function App() {
         
         <input          
           type="text"
-          value={newToDo} 
+          value={NewtoDo} 
           onChange={(event) => {
             event.target.value;
             console.log("Value", event.target.value);
@@ -47,19 +49,46 @@ function App() {
         <button type='submit'>Add To Do</button>
       </form>
       {
-        todoList.map((todoItem) => {
+        TodoList.map((todoItem) => {
           return (
             <form 
-            style={{
-              display: "flex",
-              gap: "50px",
-            }}
-            key={todoItem.id}
-            >
-            <p>{todoItem.title}</p>  
+              style={{
+                display: "flex",
+                gap: "5px",
+              }}
+              key={todoItem.id}
+              >
+              <p>{todoItem.title}</p>
+
+              <button
+              type='button'
+              onClick={(event) => {
+                setIdChanged(todoItem.id);
+                setNewChange(todoItem.title);
+              }}
+              > Sửa
+              </button>  
+              <button
+              type='button'
+              onClick={(event)=> {
+                const newArr = TodoList.filter(
+                  (item)=> item.id !== todoItem.id,
+                );
+                setTodoList(newArr);
+              }}
+              >
+                Xóa
+              </button>
             </form>
           )
         })
+      }
+      {
+        IdChanged && (
+          <div>
+            <input type="text" />
+          </div>
+        )
       }
       </>
     )
