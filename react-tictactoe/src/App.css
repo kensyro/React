@@ -182,3 +182,30 @@
     border-right-color: var(--border);
   }
 }
+.reset {
+    width: 100px;
+    height: 50px;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    border-radius: 50px;
+    background: blanchedalmond;
+    font-size: 20px;
+    color: brown;
+}
+.boxes{
+  display: flex;
+  height: 180px;
+  width: 180px;
+  margin-bottom: 10px;
+  background: #e0c5c54f;
+  border-radius: 12px;
+  cursor: pointer;
+}
+.board{
+  display: flex;
+  margin: auto;
+  gap: 10px;
+  height: 600px;
+  width: 550px;
+}
