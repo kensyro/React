@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import './App.css'
 
-type JsonToDoList = {
+type JsonToDoItem = {
   id: number,
   title: string
 }
 
-const jsonToDoList: Array<JsonToDoList> = [
+const jsonToDoList: Array<JsonToDoItem> = [
   {
     id: 1,
     title: "Học bài"
@@ -22,10 +22,10 @@ const jsonToDoList: Array<JsonToDoList> = [
 ]
 
 function App() {
-    const [TodoList, setTodoList] = useState(jsonToDoList);
+    const [TodoList, setTodoList] = useState<Array<JsonToDoItem>>(jsonToDoList);
     const [NewtoDo, setNewtoDo ] = useState<string>("");
     const [IdChanged, setIdChanged ] = useState<number | null >(null);
-    const [NewChange, setNewChange ] = useState("");
+    const [NewChange, setNewChange ] = useState<string>("");
     return (
       <div className="pxl-arcade">
         <div className="cabinet">
@@ -33,7 +33,7 @@ function App() {
 
           <div className="pxl-todo">
             <div className="pxl-list">
-              {TodoList.map((todoItem) => {
+              {TodoList.map((todoItem: JsonToDoItem) => {
                 return (
                   <div className="todo-item" key={todoItem.id}>
                     <div>{todoItem.title}</div>
@@ -51,7 +51,7 @@ function App() {
                         className='btn'
                         onClick={() => {
                           const newArr = TodoList.filter(
-                            (item) => item.id !== todoItem.id,
+                            (item:JsonToDoItem) => item.id !== todoItem.id,
                           );
                           setTodoList(newArr);
                         }}
@@ -98,7 +98,7 @@ function App() {
               <form onSubmit={(e) => {
                   e.preventDefault();
                   setIdChanged(null);
-                  const newListChange = TodoList.map((currentTodo) => {
+                  const newListChange = TodoList.map((currentTodo:JsonToDoItem) => {
                     return currentTodo.id === IdChanged
                       ? {
                           ...currentTodo,
