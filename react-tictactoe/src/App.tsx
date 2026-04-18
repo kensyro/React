@@ -26,18 +26,25 @@ type TicTacType = 'o' | 'x' | ''
     ['','',''],
     ['','','']
   ])
+  const [winner, setWinner] = useState<TicTacType | null>(null)
 
   function playerClick(key1:number, key2: number) {
+    if (winner) return
+    if (data[key1][key2] !== '') return
+
     const newData = structuredClone(data)
     newData[key1][key2] = playerColor[player]
     setData(newData)
-    setPlayer(pre => pre === 'do' ? 'xanh' : 'do')
-    if(key2 ){
-       alert("Ban da win")
-    } 
-    else {
+    
 
+    if (winner) {
+      setWinner(winner)
+      setTimeout(() => {
+        alert("Ban da win")
+      })
+      return
     }
+    setPlayer(pre => pre === 'do' ? 'xanh' : 'do')
   }
 
   return (
