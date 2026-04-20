@@ -18,33 +18,93 @@ type TicTacType = 'o' | 'x' | ''
     "do": 'x'
   }
 
- function App () {
-  //ma trận 3x3
-  const [player, setPlayer] = useState<'xanh'|'do'>('xanh')
-  const [data, setData] = useState<TicTacType[][]>([
-    ['','',''],
-    ['','',''],
-    ['','','']
-  ])
-  const [winner, setWinner] = useState<TicTacType | null>(null)
+function getListChain(ticTacList: TicTacType[][], [o1, o2]: number[], [sx1, sy1]: number[]) {
+  const sx0 = 2 * sx1 - o1
+  const sy0 = 2 * sy1 - o2
+  const sx2 = o1
+  const sy2 = o2
+  const sx3 = 2 * o1 - sx1
+  const sy3 = 2 * o2 - sy1
+  const sx4 = 2 * sx3 - o1
+  const sy4 = 2 * sy3 - o2
+  const listChain = [
+    {
+      symmetric: [sx0, sy0],
+      data: ticTacList?.[sx0]?.[sy0] || ''
+    },
+    {
+      symmetric: [sx1, sy1],
+      data: ticTacList?.[sx1]?.[sy1] || ''
+    },
+    {
+      symmetric: [sx2, sy2],
+      data: ticTacList?.[sx2]?.[sy2] || ''
+    },
+    {
+      symmetric: [sx3, sy3],
+      data: ticTacList?.[sx3]?.[sy3] || ''
+    },
+    {
+      symmetric: [sx4, sy4],
+      data: ticTacList?.[sx4]?.[sy4] || ''
+    },
+  ]
+  return listChain
+}
 
-  function playerClick(key1:number, key2: number) {
+function App() {
+  const [player, setPlayer] = useState<'xanh' | 'do'>('xanh')
+  const [data, setData] = useState<TicTacType[][]>([
+    ['', '', ''],
+    ['', '', ''],
+    ['', '', '']
+  ])
+  const [winner, setWinner] = useState<TicTacType | 'draw' | null>(null)
+
+  function checkWinner(ticTacList: TicTacType[][], key1: number, key2: number, currentChar: TicTacType) {
+    if (!currentChar) return null
+    const directions = [[key1 - 1, key2 - 1], [key1 - 1, key2], [key1 - 1, key2 + 1], [key1, key2 - 1]]
+    for (const dir of directions) {
+      const chain = getListChain(ticTacList, [key1, key2], dir)
+      for (let i = 0; i <= 2; i++) {
+        const a = chain[i]?.data === currentChar
+        const b = chain[i + 1]?.data === currentChar
+        const c = chain[i + 2]?.data === currentChar
+        if (a && b && c) {
+          const coords = [chain[i].symmetric, chain[i + 1].symmetric, chain[i + 2].symmetric]
+          return coords
+        }
+      }
+    }
+    return null
+  }
+
+  function playerClick(key1: number, key2: number) {
     if (winner) return
-    if (data[key1][key2] !== '') return
+    if (data?.[key1]?.[key2] !== '') return
 
     const newData = structuredClone(data)
-    newData[key1][key2] = playerColor[player]
+    const currentChar = playerColor[player]
+    newData[key1][key2] = currentChar
     setData(newData)
-    
 
-    if (winner) {
-      setWinner(winner)
-      setTimeout(() => {
-        alert("Ban da win")
-      })
+    const found = checkWinner(newData, key1, key2, currentChar)
+    if (found) {
+      setWinner(currentChar)
+      setTimeout(() => alert('Bạn đã thắng!'))
       return
     }
     setPlayer(pre => pre === 'do' ? 'xanh' : 'do')
+  }
+
+  function reset() {
+    setData([
+      ['', '', ''],
+      ['', '', ''],
+      ['', '', '']
+    ])
+    setPlayer('xanh')
+    setWinner(null)
   }
 
   return (
@@ -83,6 +143,9 @@ type TicTacType = 'o' | 'x' | ''
             </div>
           })
         }
+        <div style={{ marginTop: 12 }}>
+          <button onClick={reset}>Reset</button>
+        </div>
       </section>
     </main>
   )
