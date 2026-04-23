@@ -59,40 +59,47 @@ function App() {
     ['', '', ''],
     ['', '', '']
   ])
-  const [winner, setWinner] = useState<TicTacType | 'draw' | null>(null)
-
-  function checkWinner(ticTacList: TicTacType[][], key1: number, key2: number, currentChar: TicTacType) {
-    if (!currentChar) return null
-    const directions = [[key1 - 1, key2 - 1], [key1 - 1, key2], [key1 - 1, key2 + 1], [key1, key2 - 1]]
-    for (const dir of directions) {
-      const chain = getListChain(ticTacList, [key1, key2], dir)
-      for (let i = 0; i <= 2; i++) {
-        const a = chain[i]?.data === currentChar
-        const b = chain[i + 1]?.data === currentChar
-        const c = chain[i + 2]?.data === currentChar
-        if (a && b && c) {
-          const coords = [chain[i].symmetric, chain[i + 1].symmetric, chain[i + 2].symmetric]
-          return coords
-        }
-      }
-    }
-    return null
-  }
+  const [winner,setWinner] = useState<number[][] | undefined>()  
 
   function playerClick(key1: number, key2: number) {
-    if (winner) return
-    if (data?.[key1]?.[key2] !== '') return
+    if(data[key1][key2] !== '') {
+      alert("Ô đã được chọn, vui lòng chọn ô khác")
+      return
+    }
+    console.log('current winner: ',winner);
+    if(!setWinner){
+      alert("Trận đấu đã kết thúc")
+      return
+    }    
 
     const newData = structuredClone(data)
     const currentChar = playerColor[player]
     newData[key1][key2] = currentChar
+    // luu ythay doi O thanh X kh bi gi nhe
     setData(newData)
-
-    const found = checkWinner(newData, key1, key2, currentChar)
-    if (found) {
-      setWinner(currentChar)
-      setTimeout(() => alert('Bạn đã thắng!'))
-      return
+    const listKey = [[key1 - 1, key2 -1], [key1 -1,key2], [key1-1,key2+1], [key1,key2-1]]
+    for(let i = 0; i< listKey.length; i++) {
+      const listMatrix = getListChain(newData, [key1, key2], listKey[i])
+      for(let i = 0; i < listMatrix.length -2; i++) {
+        const a = listMatrix[i]
+        const b = listMatrix[i+1]
+        const c = listMatrix[i+2]
+        console.log({
+          a,
+          b,
+          c
+        });
+        
+        if(a.data===b.data&&b.data===c.data){
+          setTimeout(()=> alert(`${player} đã chiến thắng`), 0)
+          setWinner([
+            a.symmetric,
+            b.symmetric,
+            c.symmetric,
+          ])
+          return
+        }
+      }
     }
     setPlayer(pre => pre === 'do' ? 'xanh' : 'do')
   }
@@ -104,7 +111,7 @@ function App() {
       ['', '', '']
     ])
     setPlayer('xanh')
-    setWinner(null)
+    setWinner([])
   }
 
   return (
@@ -126,11 +133,28 @@ function App() {
             return <div style={{display: "flex", gap:"8px"}} key={`item-lv1-${key1}`}>
               {
                 lv1.map((lv2: TicTacType, key2)=>{
+                  const isWinnerBox = winner?.findIndex((element) => {
+                     if(element[0] === key1 && element[1] === key2) {
+                      return true;
+                     } else {
+                      return false;
+                     }                     
+                  })
+                  console.log({
+                    key1,
+                    key2,
+                    checkIndex: isWinnerBox
+                  });
+                  
                   return <div key={`item-lv2-${key2}`} onClick={(e) => {
                     playerClick(key1, key2)
                   }}
-                  style={{width:"200px", aspectRatio:"1", backgroundColor: "yellow", lineHeight: "200px", textAlign: "center", fontSize: "96px"
-                  }}> 
+                  style={{width:"200px", 
+                    aspectRatio:"1", 
+                    backgroundColor: isWinnerBox !== undefined && isWinnerBox !== -1 ? "red" : 'yellow' ,
+                    lineHeight: "200px", textAlign: "center", fontSize: "96px"                                 
+                  }}
+                  > 
                     {
                       lv2 === 'o' && <img src={circle} alt="" />
                     }
