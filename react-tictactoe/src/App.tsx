@@ -58,7 +58,7 @@ function App() {
     ['', '', ''],
     ['', '', ''],
     ['', '', '']
-  ])
+    ])
   const [winner,setWinner] = useState<number[][] | undefined>()  
 
   function playerClick(key1: number, key2: number) {
