@@ -15,12 +15,39 @@ export default function Home() {
     {x: 12, y: 1},
     {x: 13, y: 1},
   ]);
-  const [checkpoint, setCheckPoint] = useState<SymmetryType>({x:10, y:12});
+  const [checkpoint, setCheckPoint] = useState<Array<SymmetryType>>([]);
   const [map,setMap] = useState<SymmetryType>({x:0, y:1})
   const [isOver, setIsOver] = useState<boolean>(false);
   const [isPause,setIsPause] = useState<boolean>(false);
   const [score, setScore] = useState<number>(0);
   
+ useEffect(() => {
+  const handleArrow = (event: KeyboardEvent) => {
+    switch (event.key) {
+      case "ArrowUp":
+        handleUp();
+        break;
+      case "ArrowDown":
+        handleDown();
+        break;
+      case "ArrowLeft":
+        handleLeft();
+        break;
+      case "ArrowRight":
+        handleRight();
+        break;
+      default:
+        break;
+    }
+  };
+
+  window.addEventListener("keydown", handleArrow);
+
+  // Hàm dọn dẹp: sẽ được gọi khi component unmount
+  return () => {
+    window.removeEventListener("keydown", handleArrow);
+  };
+}, [map]);
   
   useEffect(() => {
     if (isOver || isPause) return;
@@ -41,35 +68,49 @@ export default function Home() {
         }
         const next = [newHead, ...prev];
         // checkpoint 
-        if (newHead.x === checkpoint.x && newHead.y === checkpoint.y) {
-          setScore(prev => prev + 1);  
-          let newPoint: {
-          x: number,
-          y: number
-          };
-          let isOnSnake;
-          do {
-            newPoint = {
-              x: Math.floor(Math.random() * count),
-              y: Math.floor(Math.random() * count),
-            };
+        if (isCheckPointSymetry(newHead)) {
+          setScore(prev => { console.log('pre: ', prev);
+           return prev + 1});  
+          const newCheckPoint = checkpoint.filter((point)=> !(point.x === newHead.x && point.y === newHead.y) )
 
-            isOnSnake = next.some(
-              (s) => s.x === newPoint.x && s.y === newPoint.y
-            );
-          } while (isOnSnake);
-          setCheckPoint(newPoint);
+          setCheckPoint(newCheckPoint)
         } else {
           next.pop();
         }
         return next;
       });
-    }, 800);
+    }, 400);
     return () => clearInterval(interval);
   }, [map, checkpoint, isOver, isPause]);
 
+  useEffect(()=>{
+    if (checkpoint.length >= 3) return 
+    const newPointList = [...checkpoint]
+    do {
+      let newPoint: SymmetryType = {
+        x: Math.floor(Math.random() * count),
+        y: Math.floor(Math.random() * count),
+      };
+
+      let isOnSnake: boolean = snake.some(
+        (s) => s.x === newPoint.x && s.y === newPoint.y
+      ) || isCheckPointSymetry(newPoint)
+
+      if (!isOnSnake) newPointList.push(newPoint) 
+    } while (newPointList.length < 3);
+    setCheckPoint(newPointList);
+    
+  },[score])
+
+  const isCheckPointSymetry = ({x, y}: SymmetryType) => {
+    return checkpoint.some(
+        (c) => c.x === x && c.y === y
+      )
+  }
+
+
   const getBoard = (x: number, y: number) => {
-    if (checkpoint.x === x && checkpoint.y === y) {
+    if (isCheckPointSymetry({x , y})) {
       return "checkpoint";
     }
     if(snake.length === 0) {
@@ -97,28 +138,15 @@ export default function Home() {
         const newHead = { x: head.x - symmetryChance.x, y: head.y - symmetryChance.y };
         newSnake.push(newHead)
     }
-    let newPoint: {
-    x: number,
-    y: number
-    };
-    let isOnSnake;
-    do {
-      newPoint = {
-        x:Math.floor(Math.random()* count),
-        y:Math.floor(Math.random()* count),
-      };
-      isOnSnake = newSnake.some(
-        (s) => s.x === newPoint.x && s.y === newPoint.y
-      );
-    } while (isOnSnake);    
     setMap(symmetryChance)
     setSnake(newSnake)
     setScore(0);  
-    setCheckPoint(newPoint)
   }
 
   // Handle and Use button UP DOWN LEFT RIGHT
   const handleUp = () => {
+    console.log("đã vào đây: ", map);
+    
     if (map.y !== 1) {
       setMap({x:0, y: -1})
     }
@@ -149,28 +177,6 @@ export default function Home() {
     setIsPause(!isPause);
   }
   return (
-      window.addEventListener("keydown", (event: KeyboardEvent) => {
-        switch (event.key) {
-          case "ArrowUp":
-            console.log("Up pressed");
-            handleUp();
-              break;
-          case "ArrowDown":
-            console.log("Down pressed");
-            handleDown();
-            break;
-          case "ArrowLeft":
-            console.log("Left pressed");
-            handleLeft();
-            break;
-          case "ArrowRight":
-            console.log("Right pressed");
-            handleRight();
-            break;
-          default:
-            break;
-        }
-    }),
     <section className="flex flex-col justify-center items-center h-dvh">
       <section className="w-[40vw] aspect-square border border-black">
         <div 
@@ -195,12 +201,11 @@ export default function Home() {
         </div>
       </section>
       <section className="flex gap-2">
-        <div className="flex justify-center items-center mt-3 border-2 w-10 h-10 " onClick={handlePause}><Pause /></div>
-        <div className="flex justify-center items-center mt-3 border-2 w-10 h-10 " onClick={handleStart}><Play /></div>
-        <div className="flex justify-center items-center mt-3 border-2 w-10 h-10 " onClick={handleLeft}><ArrowLeft /></div>
+        <div className="flex justify-center items-center mt-3 border-2 w-10 h-10 " onClick={handlePause}>{isPause ? <Play/>: <Pause/>}</div>
+        {/* <div className="flex justify-center items-center mt-3 border-2 w-10 h-10 " onClick={handleLeft}><ArrowLeft /></div>
         <div className="flex justify-center items-center mt-3 border-2 w-10 h-10 " onClick={handleUp}><ArrowUp /></div>
         <div className="flex justify-center items-center mt-3 border-2 w-10 h-10 " onClick={handleDown}><ArrowDown /></div>
-        <div className="flex justify-center items-center mt-3 border-2 w-10 h-10 " onClick={handleRight }><ArrowRight /></div>
+        <div className="flex justify-center items-center mt-3 border-2 w-10 h-10 " onClick={handleRight }><ArrowRight /></div> */}
         <div className="flex justify-center items-center mt-3 border-2 w-20 h-10 text-sm" >Score: {score}</div>
         
       </section>
