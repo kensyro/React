@@ -1,26 +1,29 @@
 "use client";
 import { useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight, ArrowDown, ArrowUp, Play } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ArrowDown, ArrowUp, Play, Pause } from 'lucide-react';
+
+type SymmetryType = {
+    x: number,
+    y: number
+  };
 
 export default function Home() {
   const count = 20;
-  const [snake, setSnake] = useState([
+  const [snake, setSnake] = useState<Array<SymmetryType>>([
     {x: 10, y: 1},
     {x: 11, y: 1},
     {x: 12, y: 1},
     {x: 13, y: 1},
   ]);
-  const [checkpoint, setCheckPoint] = useState({x:10, y:12});
-  const [map,setMap] = useState({x:0, y:1})
-  const [isOver, setIsOver] = useState(false);
+  const [checkpoint, setCheckPoint] = useState<SymmetryType>({x:10, y:12});
+  const [map,setMap] = useState<SymmetryType>({x:0, y:1})
+  const [isOver, setIsOver] = useState<boolean>(false);
+  const [isPause,setIsPause] = useState<boolean>(false);
+  const [score, setScore] = useState<number>(0);
   
-  type SymmetryType = {
-    x: number,
-    y: number
-  };
   
   useEffect(() => {
-    if (isOver) return;
+    if (isOver || isPause) return;
     const interval = setInterval(() => {
       setSnake((prev) => {
         const head = prev[0];
@@ -39,6 +42,7 @@ export default function Home() {
         const next = [newHead, ...prev];
         // checkpoint 
         if (newHead.x === checkpoint.x && newHead.y === checkpoint.y) {
+          setScore(prev => prev + 1);  
           let newPoint: {
           x: number,
           y: number
@@ -62,18 +66,21 @@ export default function Home() {
       });
     }, 800);
     return () => clearInterval(interval);
-  }, [map, checkpoint, isOver])
+  }, [map, checkpoint, isOver, isPause]);
 
   const getBoard = (x: number, y: number) => {
+    if (checkpoint.x === x && checkpoint.y === y) {
+      return "checkpoint";
+    }
+    if(snake.length === 0) {
+      return "emty";
+    }     
     if (snake[0].x === x && snake[0].y === y) {
       return "head";
     }
     if (snake.some((s) => s.x === x && s.y === y)) {
     return "body";
     }
-    if (checkpoint.x === x && checkpoint.y === y) {
-      return "checkpoint";
-    }     
   };
   const handleStart = () => {
     // công thức: random * (max - min) + min
@@ -88,7 +95,7 @@ export default function Home() {
     for (let i = 0; i < 3; i ++) {
         const head = newSnake[i];
         const newHead = { x: head.x - symmetryChance.x, y: head.y - symmetryChance.y };
-        newSnake.push(newHead)  
+        newSnake.push(newHead)
     }
     let newPoint: {
     x: number,
@@ -106,6 +113,7 @@ export default function Home() {
     } while (isOnSnake);    
     setMap(symmetryChance)
     setSnake(newSnake)
+    setScore(0);  
     setCheckPoint(newPoint)
   }
 
@@ -137,7 +145,32 @@ export default function Home() {
     setIsOver(false);
     handleStart();
   }
+  const handlePause = () => {
+    setIsPause(!isPause);
+  }
   return (
+      window.addEventListener("keydown", (event: KeyboardEvent) => {
+        switch (event.key) {
+          case "ArrowUp":
+            console.log("Up pressed");
+            handleUp();
+              break;
+          case "ArrowDown":
+            console.log("Down pressed");
+            handleDown();
+            break;
+          case "ArrowLeft":
+            console.log("Left pressed");
+            handleLeft();
+            break;
+          case "ArrowRight":
+            console.log("Right pressed");
+            handleRight();
+            break;
+          default:
+            break;
+        }
+    }),
     <section className="flex flex-col justify-center items-center h-dvh">
       <section className="w-[40vw] aspect-square border border-black">
         <div 
@@ -162,11 +195,14 @@ export default function Home() {
         </div>
       </section>
       <section className="flex gap-2">
+        <div className="flex justify-center items-center mt-3 border-2 w-10 h-10 " onClick={handlePause}><Pause /></div>
         <div className="flex justify-center items-center mt-3 border-2 w-10 h-10 " onClick={handleStart}><Play /></div>
         <div className="flex justify-center items-center mt-3 border-2 w-10 h-10 " onClick={handleLeft}><ArrowLeft /></div>
         <div className="flex justify-center items-center mt-3 border-2 w-10 h-10 " onClick={handleUp}><ArrowUp /></div>
         <div className="flex justify-center items-center mt-3 border-2 w-10 h-10 " onClick={handleDown}><ArrowDown /></div>
         <div className="flex justify-center items-center mt-3 border-2 w-10 h-10 " onClick={handleRight }><ArrowRight /></div>
+        <div className="flex justify-center items-center mt-3 border-2 w-20 h-10 text-sm" >Score: {score}</div>
+        
       </section>
       {isOver && (
         <div className= "fixed inset-0 flex justify-center items-center backdrop-blur-5px">
