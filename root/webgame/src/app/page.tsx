@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight, ArrowDown, ArrowUp, Play, Pause } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ArrowDown, ArrowUp, Play, Pause, ToggleRight, ToggleLeft } from 'lucide-react';
 
 type SymmetryType = {
     x: number,
@@ -20,6 +20,7 @@ export default function Home() {
   const [isOver, setIsOver] = useState<boolean>(false);
   const [isPause,setIsPause] = useState<boolean>(false);
   const [score, setScore] = useState<number>(0);
+  const [isSwitched, setIsSwitched] = useState<boolean>(false);
   
  useEffect(() => {
   const handleArrow = (event: KeyboardEvent) => {
@@ -41,13 +42,15 @@ export default function Home() {
     }
   };
 
-  window.addEventListener("keydown", handleArrow);
+    if (isSwitched) {
+      window.addEventListener("keydown", handleArrow);
+    }
 
-  // Hàm dọn dẹp: sẽ được gọi khi component unmount
-  return () => {
-    window.removeEventListener("keydown", handleArrow);
-  };
-}, [map]);
+    // Hàm dọn dẹp: sẽ được gọi khi component unmount
+    return () => {
+      window.removeEventListener("keydown", handleArrow);
+    };
+  }, [map, isSwitched]);
   
   useEffect(() => {
     if (isOver || isPause) return;
@@ -176,6 +179,9 @@ export default function Home() {
   const handlePause = () => {
     setIsPause(!isPause);
   }
+  const handleSwitch = () => {
+    setIsSwitched(!isSwitched);
+  }
   return (
     <section className="flex flex-col justify-center items-center h-dvh">
       <section className="w-[40vw] aspect-square border border-black">
@@ -202,11 +208,19 @@ export default function Home() {
       </section>
       <section className="flex gap-2">
         <div className="flex justify-center items-center mt-3 border-2 w-10 h-10 " onClick={handlePause}>{isPause ? <Play/>: <Pause/>}</div>
-        {/* <div className="flex justify-center items-center mt-3 border-2 w-10 h-10 " onClick={handleLeft}><ArrowLeft /></div>
-        <div className="flex justify-center items-center mt-3 border-2 w-10 h-10 " onClick={handleUp}><ArrowUp /></div>
-        <div className="flex justify-center items-center mt-3 border-2 w-10 h-10 " onClick={handleDown}><ArrowDown /></div>
-        <div className="flex justify-center items-center mt-3 border-2 w-10 h-10 " onClick={handleRight }><ArrowRight /></div> */}
+        {!isSwitched && (
+          <>
+            <div className="flex justify-center items-center mt-3 border-2 w-10 h-10 " onClick={handleLeft}><ArrowLeft /></div>
+            <div className="flex justify-center items-center mt-3 border-2 w-10 h-10 " onClick={handleUp}><ArrowUp /></div>
+            <div className="flex justify-center items-center mt-3 border-2 w-10 h-10 " onClick={handleDown}><ArrowDown /></div>
+            <div className="flex justify-center items-center mt-3 border-2 w-10 h-10 " onClick={handleRight }><ArrowRight /></div>
+          </>
+        )}
         <div className="flex justify-center items-center mt-3 border-2 w-20 h-10 text-sm" >Score: {score}</div>
+        <div className="flex justify-center items-center mt-3 w-auto h-10 " onClick={handleSwitch}>
+          <div className="mr-2 text-sm">{isSwitched ? 'Bàn phím' : 'Phím bấm'}</div>
+          {isSwitched ? <ToggleRight/> : <ToggleLeft />}
+        </div>
         
       </section>
       {isOver && (
