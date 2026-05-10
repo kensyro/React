@@ -5,19 +5,27 @@ n = 4
     [ 6,  9, 12, 14],
     [10, 13, 15, 16]
 ]
+// Đi từ 1,2,4
+// Đi tử 3,5
 
 function DiagonalFill(n) {
     const matrix = Array.from({ length: n }, () => []);
     let hang = 0;
-    let cot = 0;
+    let achor = 0;
     for(let index = 1; index <= n*n ; index++) {
-        matrix[hang][cot] = index;
-        if(cot === 0) {
-            hang = 0
-        } else {
-            hang +=1
+        if(matrix[hang].length === n) {
+            achor += 1;
+            hang = achor;
+        }
+        matrix[hang].push(index);
+        console.log({hang,achor,index},matrix);
+        if(matrix[hang].length === 1 || hang === n-1) {
+            hang = achor;
+        }else {
+            hang += 1;
         }
     }
-    console.log(matrix);
+    
+    return matrix;
 }
-DiagonalFill(4);
+console.log(DiagonalFill(4));
